@@ -32,24 +32,82 @@
 #include <math.h>
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
+/* Declare body parts height */
+#define BODY_HEIGHT 5.0
+#define UPPER_GUN_HEIGHT 5.0
+#define UPPER_LEG_RADIUS 0.5
+#define LOWER_LEG_RADIUS 0.5
+#define LOWER_LEG_HEIGHT 2.0
+#define UPPER_LEG_HEIGHT 3.0
+#define UPPER_LEG_RADIUS 0.5
+#define BODY_RADIUS 1.0
+#define UPPER_GUN_RADIUS 0.5
+
+/* Initial joint angles */
+typedef float point[3];
+static GLfloat theta[11] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,
+            180.0,0.0,180.0,0.0};
+
+GLUquadricObj *t, *h, *lua, *lla, *rua, *rla, *lll, *rll, *rul, *lul;
+
+double size = 1.0;
+
+void body(){
+	glPushMatrix();
+	glRotatef(-90,1,0,0);
+	gluCylinder(t,BODY_RADIUS,BODY_RADIUS,BODY_HEIGHT,10,10);
+	glPopMatrix();
+}
+
+void left_gun(){
+	glPushMatrix();
+	glRotatef(-90,1,0,0);
+	gluCylinder(lua,UPPER_GUN_RADIUS,UPPER_GUN_RADIUS,UPPER_GUN_HEIGHT,10,10);
+	glPopMatrix();
+}
+
+void right_gun(){
+	glPushMatrix();
+	glRotatef(-90,1,0,0);
+	gluCylinder(rua,UPPER_GUN_RADIUS,UPPER_GUN_RADIUS,UPPER_GUN_HEIGHT,10,10);
+	glPopMatrix();
+}
+
+void left_upper_leg(){
+	glPushMatrix();
+	glRotatef(-90,1,0,0);
+	gluCylinder(lul,UPPER_LEG_RADIUS,UPPER_LEG_RADIUS,UPPER_LEG_HEIGHT,10,10);
+	glPopMatrix();
+}
+
+void left_lower_leg(){
+	glPushMatrix();
+	glRotatef(-90,1,0,0);
+	gluCylinder(lll,LOWER_LEG_RADIUS,LOWER_LEG_RADIUS,LOWER_LEG_HEIGHT,10,10);
+	glPopMatrix();
+}
+
+void right_upper_leg(){
+	glPushMatrix();
+	glRotatef(-90,1,0,0);
+	gluCylinder(rul,UPPER_LEG_RADIUS,UPPER_LEG_RADIUS,UPPER_LEG_HEIGHT,10,10);
+	glPopMatrix();
+}
+
+void right_lower_leg(){
+	glPushMatrix();
+	glRotatef(-90,1,0,0);
+	gluCylinder(rll,LOWER_LEG_RADIUS,LOWER_LEG_RADIUS,LOWER_LEG_HEIGHT,10,10);
+	glPopMatrix();
+}
+
+
+
 void init() {
 	glEnable(GL_DEPTH_TEST);			// Enable check for close and far objects.
 	glClearColor(0.0, 0.0, 0.0, 0.0);	// Clear the color state.
 	glMatrixMode(GL_MODELVIEW);			// Go to 3D mode.
 	glLoadIdentity();					// Reset 3D view matrix.
-}
-
-void drawRectangle(float x, float y, float w, float h){
-    glBegin(GL_POLYGON);
-    {
-        glVertex3f(x,y,0);
-        glVertex3f(x +w,y,0);
-        glVertex3f(x+w,y-h,0);
-        glVertex3f(x,y-h,0);
-        
-    }
-    glEnd();
-	glFlush();
 }
 
 void drawAxis (){
@@ -76,8 +134,49 @@ void display()							// Called for each frame (about 60 times per second).
 	gluLookAt(0.0, 0.0, 10.0,										// Where the camera is.
 		      0.0, 0.0, 0.0,										// To where the camera points at.
 		      0.0, 1.0, 0.0);
-	glLineWidth(5);
 	drawAxis();
+
+	/* Draw Torso */
+	glColor3f(0,0,0);
+	glRotatef(theta[0],0,1,0);
+	body();
+	/* Connect left arm to the body */
+	glPushMatrix();
+	glTranslatef(-(BODY_RADIUS+UPPER_GUN_RADIUS), 0.9*BODY_HEIGHT,0);
+	glRotatef(theta[3],1,0,0);
+	left_gun();
+	glPopMatrix();
+	
+	/* Connect right arm to the body */
+	glPushMatrix();
+	glTranslatef(BODY_RADIUS+UPPER_GUN_RADIUS, 0.9*BODY_HEIGHT,0);
+	glRotatef(theta[5],1,0,0);
+	right_gun();
+	glPopMatrix();
+
+	/* Connect the left leg */
+	glPushMatrix();
+	glTranslatef(-(BODY_RADIUS+UPPER_LEG_RADIUS), 0.1*UPPER_LEG_HEIGHT, 0);
+	glRotatef(theta[7],1,0,0);
+	left_upper_leg();
+
+	glTranslatef(0,UPPER_LEG_HEIGHT,0);
+	glRotatef(theta[8],1,0,0);
+	left_lower_leg();
+	glPopMatrix();
+
+	/* Connect the right leg */
+	glPushMatrix();
+	glTranslatef(BODY_RADIUS+UPPER_LEG_RADIUS, 0.1*UPPER_LEG_HEIGHT, 0);
+    glRotatef(theta[9], 1, 0, 0);
+    right_upper_leg();
+
+    glTranslatef(0, UPPER_LEG_HEIGHT, 0);
+    glRotatef(theta[10], 1, 0, 0);
+    right_lower_leg();
+    glPopMatrix();
+
+	glFlush();
 	glutSwapBuffers();												// Swap the hidden and visible buffers.
 }
 
@@ -89,15 +188,17 @@ void idle()															// Called when drawing is finished.
 
 void reshape(int x, int y)											// Called when the window geometry changes.
 {
-	glMatrixMode(GL_PROJECTION);									// Go to 2D mode.
-	glLoadIdentity();												// Reset the 2D matrix.
-	gluPerspective(40.0, (GLdouble)x / (GLdouble)y, 0.5, 50.0);		// Configure the camera lens aperture.
-	glMatrixMode(GL_MODELVIEW);										// Go to 3D mode.
-	glViewport(0, 0, x, y);											// Configure the camera frame dimensions.
-	gluLookAt(0.0, 1.0, 4.0,
-		      0.0, 0.0, 0.0,
-		      0.0, 1.0, 0.0);
-	display();
+	glViewport(0, 0, x, y);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    if (x <= y)
+        glOrtho(-10.0, 10.0, -10.0 * (GLfloat) y / (GLfloat) x,
+            10.0 * (GLfloat) y / (GLfloat) x, -10.0, 10.0);
+    else
+        glOrtho(-10.0 * (GLfloat) x / (GLfloat) y,
+            10.0 * (GLfloat) x / (GLfloat) y, 0.0, 10.0, -10.0, 10.0);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 }
 
 
@@ -133,26 +234,71 @@ void littleKey(unsigned char key, int x, int y){
 }
 
 void specialKey(int key, int x,int y){
-	switch(key){
-		case GLUT_KEY_UP:
-			
-			break;
-		case GLUT_KEY_DOWN:
-			
-			break;
-	}
+	
+}
+
+void myinit()
+{
+        GLfloat mat_specular[]={1.0, 1.0, 1.0, 1.0};
+        GLfloat mat_diffuse[]={1.0, 1.0, 1.0, 1.0};
+        GLfloat mat_ambient[]={1.0, 1.0, 1.0, 1.0};
+        GLfloat mat_shininess={100.0};
+        GLfloat light_ambient[]={0.0, 0.0, 0.0, 1.0};
+        GLfloat light_diffuse[]={1.0, 1.0, 1.0, 1.0};
+        GLfloat light_specular[]={1.0, 1.0, 1.0, 1.0};
+        GLfloat light_position[]={10.0, 10.0, 10.0, 0.0};
+
+        glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+        glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+        glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+        glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+
+        glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+        glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+        glMaterialf(GL_FRONT, GL_SHININESS, mat_shininess);
+
+        glShadeModel(GL_SMOOTH);
+        glEnable(GL_LIGHTING); 
+        glEnable(GL_LIGHT0);
+        glDepthFunc(GL_LEQUAL);
+        glEnable(GL_DEPTH_TEST); 
+
+        glClearColor(1.0, 1.0, 1.0, 1.0);
+        glColor3f(0.0, 0.0, 0.0);
+
+/* allocate quadrics with filled drawing style */
+
+        h=gluNewQuadric();
+        gluQuadricDrawStyle(h, GLU_FILL);
+        t=gluNewQuadric();
+        gluQuadricDrawStyle(t, GLU_FILL);
+        lua=gluNewQuadric();
+        gluQuadricDrawStyle(lua, GLU_FILL);
+        lla=gluNewQuadric();
+        gluQuadricDrawStyle(lla, GLU_FILL);
+        rua=gluNewQuadric();
+        gluQuadricDrawStyle(rua, GLU_FILL);
+        rla=gluNewQuadric();
+        gluQuadricDrawStyle(rla, GLU_FILL);
+        lul=gluNewQuadric();
+        gluQuadricDrawStyle(lul, GLU_FILL);
+        lll=gluNewQuadric();
+        gluQuadricDrawStyle(lll, GLU_FILL);
+        rul=gluNewQuadric();
+        gluQuadricDrawStyle(rul, GLU_FILL);
+        rll=gluNewQuadric();
+        gluQuadricDrawStyle(rll, GLU_FILL);
 }
 
 int main(int argc, char* argv[])
 {
 	glutInit(&argc, argv);											// Init GLUT with command line parameters.
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH | GLUT_RGB);		// Use 2 buffers (hidden and visible). Use the depth buffer. Use 3 color channels.
-	glutInitWindowSize(800, 600);
+	glutInitWindowSize(500, 500);
 	glutCreateWindow("AT-ST");
 	
-	init();
-	glutKeyboardFunc(littleKey);
-	glutSpecialFunc(specialKey);
+	myinit();
 	glutReshapeFunc(reshape);										// Reshape CALLBACK function.
 	glutDisplayFunc(display);										// Display CALLBACK function.
 	glutIdleFunc(idle);												// Idle CALLBACK function.
