@@ -56,22 +56,14 @@
 
 /* Initial joint angles */
 typedef float point[3];
-static GLfloat theta[15] = {
-	-28.0,
-	0.0,
-	0.0,
-	89,
-	-88.0,
-	0.0,
-	180,
-	263,
-	-121,
-	263,
-	-121,
-	267,
-	267,
-	-50,
-	-50};
+
+static GLfloat keyframes[2][15] = {
+	{28.0,0.0,0.0,95,-88.0,0.0,180,263,-121,263,-121,267,267,-50,-50},
+	{-28.0,0.0,0.0,85,-88.0,0.0,180,263,-121,263,-121,267,267,-50,-50},
+};
+
+int currentFrame;
+GLfloat theta[15] ={-28.0,0.0,0.0,89,-88.0,0.0,180,263,-121,263,-121,267,267,-50,-50};
 /* Chosen part for debug */
 int bpart;
 /* debug mode flag */
@@ -204,6 +196,7 @@ void drawAxis()
 
 void display() // Called for each frame (about 60 times per second).
 {
+	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers.
 	glLoadIdentity();									// Reset 3D view matrix.
 	gluLookAt(0.0, 0.0, 10.0,							// Where the camera is.
@@ -279,9 +272,41 @@ void display() // Called for each frame (about 60 times per second).
 	glutSwapBuffers(); // Swap the hidden and visible buffers.
 }
 
-void idle() // Called when drawing is finished.
-{
+int compare_float(float f1, float f2){
+  float precision = 0.1;
+  if (((f1 - precision) < f2) && 
+      ((f1 + precision) > f2))
+   {
+    return 1;
+   }
+  else
+   {
+    return 0;
+   }
+ }
 
+void idle() {
+
+	if(currentFrame == (sizeof(keyframes)/sizeof(keyframes[0]))){
+		currentFrame = 0;
+	}
+
+	int equal = 1;
+
+	for(int x = 0; x < (sizeof(theta)/sizeof(theta[0])); x++){
+		if(!compare_float(keyframes[currentFrame][x],theta[x])){
+			if(keyframes[currentFrame][x] >= theta[x]){
+				theta[x] += 0.07f;
+			} else{
+				theta[x] -= 0.07f;
+			}
+			equal = equal&0;
+		}
+	}
+
+	if(equal){
+		currentFrame++;
+	}
 	glutPostRedisplay(); // Display again.
 }
 
@@ -442,7 +467,7 @@ void myinit()
 	glShadeModel(GL_SMOOTH);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
-	glDepthFunc(GL_LEQUAL);
+	glDepthFunc(GL_ALWAYS);
 	glEnable(GL_DEPTH_TEST);
 
 	glClearColor(1.0, 1.0, 1.0, 1.0);
