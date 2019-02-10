@@ -39,20 +39,25 @@
 #define BODY_RADIUS 3.0
 #define UPPER_GUN_HEIGHT 5.0
 #define UPPER_GUN_RADIUS 0.5
+#define MIDDLE_GUN_RADIUS 1.0
+#define MIDDLE_GUN_HEIGHT 4.0
 
 #define UPPER_LEG_RADIUS 0.5
 #define LOWER_LEG_RADIUS 0.5
-#define LOWER_LEG_HEIGHT 2.0
+#define LOWER_LEG_HEIGHT 6.0
 #define UPPER_LEG_HEIGHT 3.0
+#define LEFT_FEET_HEIGHT 1.0
+#define FEET_WIDTH 2.0
+#define FEET_LENGTH 3.0
 
 
 /* Initial joint angles */
 typedef float point[3];
-static GLfloat theta[11] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,
-            180.0,0.0,180.0,0.0};
+static GLfloat theta[13] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,
+            180.0,0.0,180.0,0.0,180,180};
 int bpart;
 
-GLUquadricObj *t, *h, *lua, *lla, *rua, *rla, *lll, *rll, *rul, *lul;
+GLUquadricObj *t, *h, *lua, *lla, *rua, *rla, *lll, *rll, *rul, *lul, *lf, *rf;
 
 double size = 1.0;
 
@@ -74,6 +79,13 @@ void right_gun(){
 	glPushMatrix();
 	glRotatef(-90,1,0,0);
 	gluCylinder(rua,UPPER_GUN_RADIUS,UPPER_GUN_RADIUS,UPPER_GUN_HEIGHT,10,10);
+	glPopMatrix();
+}
+
+void middle_gun(){
+	glPushMatrix();
+	glRotatef(-90,1,0,0);
+	gluCylinder(lla,MIDDLE_GUN_RADIUS,MIDDLE_GUN_RADIUS,MIDDLE_GUN_HEIGHT,10,10);
 	glPopMatrix();
 }
 
@@ -102,6 +114,20 @@ void right_lower_leg(){
 	glPushMatrix();
 	glRotatef(-90,1,0,0);
 	gluCylinder(rll,LOWER_LEG_RADIUS,LOWER_LEG_RADIUS,LOWER_LEG_HEIGHT,10,10);
+	glPopMatrix();
+}
+
+void left_feet(){
+	glPushMatrix();
+	glRotatef(-90,1,0,0);
+	gluCylinder(lf,FEET_LENGTH,FEET_WIDTH,LEFT_FEET_HEIGHT,10,10);
+	glPopMatrix();
+}
+
+void right_feet(){
+	glPushMatrix();
+	glRotatef(-90,1,0,0);
+	gluCylinder(lf,FEET_LENGTH,FEET_WIDTH,LEFT_FEET_HEIGHT,10,10);
 	glPopMatrix();
 }
 
@@ -142,17 +168,24 @@ void display()							// Called for each frame (about 60 times per second).
 	glColor3f(0,0,0);
 	glRotatef(theta[0],0,1,0);
 	body();
-	/* Connect left arm to the body */
+	/* Connect left gun to the body */
 	glPushMatrix();
-	glTranslatef(-(BODY_RADIUS+UPPER_GUN_RADIUS), 0.9*BODY_HEIGHT,0);
+	glTranslatef(-(BODY_RADIUS+UPPER_GUN_RADIUS), 0.2*BODY_HEIGHT,0);
+	glRotatef(theta[3],1,0,0);
+	left_gun();
+	glPopMatrix();
+
+	/* Connect middle gun to the body */
+	glPushMatrix();
+	glTranslatef((BODY_RADIUS/2-1.5*MIDDLE_GUN_RADIUS), 0.2*BODY_HEIGHT,0);
 	glRotatef(theta[3],1,0,0);
 	left_gun();
 	glPopMatrix();
 	
-	/* Connect right arm to the body */
+	/* Connect right gun to the body */
 	glPushMatrix();
-	glTranslatef(BODY_RADIUS+UPPER_GUN_RADIUS, 0.9*BODY_HEIGHT,0);
-	glRotatef(theta[5],1,0,0);
+	glTranslatef(BODY_RADIUS+UPPER_GUN_RADIUS, 0.2*BODY_HEIGHT,0);
+	glRotatef(theta[3],1,0,0);
 	right_gun();
 	glPopMatrix();
 
@@ -165,6 +198,10 @@ void display()							// Called for each frame (about 60 times per second).
 	glTranslatef(0,UPPER_LEG_HEIGHT,0);
 	glRotatef(theta[8],1,0,0);
 	left_lower_leg();
+
+	glTranslatef(0,UPPER_LEG_HEIGHT+3*LEFT_FEET_HEIGHT,0);
+	glRotatef(theta[11],1,0,0);
+	left_feet();
 	glPopMatrix();
 
 	/* Connect the right leg */
@@ -173,9 +210,14 @@ void display()							// Called for each frame (about 60 times per second).
     glRotatef(theta[9], 1, 0, 0);
     right_upper_leg();
 
-    glTranslatef(0, UPPER_LEG_HEIGHT, 0);
+    glTranslatef(0 ,UPPER_LEG_HEIGHT, 0);
     glRotatef(theta[10], 1, 0, 0);
     right_lower_leg();
+
+	glTranslatef(0,UPPER_LEG_HEIGHT+3*LEFT_FEET_HEIGHT,0);
+	glRotatef(theta[12],1,0,0);
+	left_feet();
+
     glPopMatrix();
 
 	glFlush();
@@ -250,11 +292,11 @@ void littleKey(unsigned char key, int x, int y){
 void specialKey(int key, int x,int y){
 	switch(key){
 		case GLUT_KEY_UP:
-			theta[bpart] +=0.5;
+			theta[bpart] +=1;
 			printf("here\n");
 		break;
 		case GLUT_KEY_DOWN:
-			theta[bpart] -=0.5;
+			theta[bpart] -=1;
 		break;
 	}
 }
@@ -311,6 +353,10 @@ void myinit()
         gluQuadricDrawStyle(rul, GLU_FILL);
         rll=gluNewQuadric();
         gluQuadricDrawStyle(rll, GLU_FILL);
+		lf=gluNewQuadric();
+        gluQuadricDrawStyle(lf, GLU_FILL);
+		rf=gluNewQuadric();
+        gluQuadricDrawStyle(rf, GLU_FILL);
 }
 
 int main(int argc, char* argv[])
