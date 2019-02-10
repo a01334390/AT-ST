@@ -28,25 +28,29 @@
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
+// #include <iostream>
 #include <string.h>
 #include <math.h>
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
 /* Declare body parts height */
 #define BODY_HEIGHT 5.0
+#define BODY_RADIUS 3.0
 #define UPPER_GUN_HEIGHT 5.0
+#define UPPER_GUN_RADIUS 0.5
+
 #define UPPER_LEG_RADIUS 0.5
 #define LOWER_LEG_RADIUS 0.5
 #define LOWER_LEG_HEIGHT 2.0
 #define UPPER_LEG_HEIGHT 3.0
-#define UPPER_LEG_RADIUS 0.5
-#define BODY_RADIUS 1.0
-#define UPPER_GUN_RADIUS 0.5
+
 
 /* Initial joint angles */
 typedef float point[3];
 static GLfloat theta[11] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,
             180.0,0.0,180.0,0.0};
+int bpart;
 
 GLUquadricObj *t, *h, *lua, *lla, *rua, *rla, *lll, *rll, *rul, *lul;
 
@@ -102,7 +106,6 @@ void right_lower_leg(){
 }
 
 
-
 void init() {
 	glEnable(GL_DEPTH_TEST);			// Enable check for close and far objects.
 	glClearColor(0.0, 0.0, 0.0, 0.0);	// Clear the color state.
@@ -135,7 +138,6 @@ void display()							// Called for each frame (about 60 times per second).
 		      0.0, 0.0, 0.0,										// To where the camera points at.
 		      0.0, 1.0, 0.0);
 	drawAxis();
-
 	/* Draw Torso */
 	glColor3f(0,0,0);
 	glRotatef(theta[0],0,1,0);
@@ -201,40 +203,60 @@ void reshape(int x, int y)											// Called when the window geometry changes.
     glLoadIdentity();
 }
 
-
 /*
 	This can help on having an interactive keyboard
 */
 void littleKey(unsigned char key, int x, int y){
 	switch(key){
 		case 'A': case 'a': case '1': case 1:
-			
+			bpart = 0;
 		break;
 		case 'B': case 'b': case '2': case 2:
-			
+			bpart = 1;
 		break;
 		case 'C': case 'c': case '3': case 3:
-			
+			bpart = 2;
 		break;
 		case 'D': case 'd': case '4': case 4:
-			
+			bpart = 3;
 		break;
 		case 'E': case 'e': case '5': case 5:
-			
+			bpart = 4;
 		break;
 		case 'F': case 'f': case '6': case 6:
-			
+			bpart = 5;
 		break;
 		case 'G': case 'g': case '7': case 7:
-			
+			bpart = 6;
+		break;
+		case 'H': case 'h': case '8': case 8:
+			bpart = 7;
+		break;
+		case 'I': case 'i': case '9': case 9:
+			bpart = 8;
+		break;
+		case 'J': case 'j': case 10:
+			bpart = 9;
+		break;
+		case 'K': case 'k': case 11:
+			bpart = 10;
 		break;
 	}
 	//Goes back to the display function
+	// std::cout << bpart;
 	glutPostRedisplay();
 }
 
 void specialKey(int key, int x,int y){
-	
+	switch(key){
+		case GLUT_KEY_UP:
+			theta[bpart] +=0.5;
+			printf("here\n");
+		break;
+		case GLUT_KEY_DOWN:
+			theta[bpart] -=0.5;
+		break;
+	}
 }
 
 void myinit()
@@ -297,6 +319,8 @@ int main(int argc, char* argv[])
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH | GLUT_RGB);		// Use 2 buffers (hidden and visible). Use the depth buffer. Use 3 color channels.
 	glutInitWindowSize(500, 500);
 	glutCreateWindow("AT-ST");
+	glutKeyboardFunc(littleKey);
+	glutSpecialFunc(specialKey);
 	
 	myinit();
 	glutReshapeFunc(reshape);										// Reshape CALLBACK function.
