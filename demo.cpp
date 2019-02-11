@@ -57,13 +57,16 @@
 /* Initial joint angles */
 typedef float point[3];
 
-static GLfloat keyframes[2][15] = {
-	{28.0,0.0,0.0,95,-88.0,0.0,180,263,-121,263,-121,267,267,-50,-50},
-	{-28.0,0.0,0.0,85,-88.0,0.0,180,263,-121,263,-121,267,267,-50,-50},
+static GLfloat keyframes[5][15] = {
+	{-30.0,0.0,0.0,95,-88.0,0.0,180,193,-43,263,-121,267,267,-57,-50},
+	{-30.0,0.0,0.0,80,-88.0,0.0,180,263,-121,193,-43,267,266,-50,-57},
+	{-30.0,0.0,0.0,95,-88.0,0.0,180,284,-141,263,-121,267,267,-57,-50},
+	{-30.0,0.0,0.0,80,-88.0,0.0,180,263,-121,284,-141,267,266,-50,-57},
+	{-30.0,0.0,0.0,95,-88.0,0.0,180,263,-121,263,-121,267,267,-50,-50}
 };
 
 int currentFrame;
-GLfloat theta[15] ={-28.0,0.0,0.0,89,-88.0,0.0,180,263,-121,263,-121,267,267,-50,-50};
+GLfloat theta[15] ={-0,0.0,0.0,89,-88.0,0.0,180,263,-121,263,-121,267,267,-50,-50};
 /* Chosen part for debug */
 int bpart;
 /* debug mode flag */
@@ -286,8 +289,8 @@ int compare_float(float f1, float f2){
  }
 
 void idle() {
-
-	if(currentFrame == (sizeof(keyframes)/sizeof(keyframes[0]))){
+	if(!debug){
+		if(currentFrame == (sizeof(keyframes)/sizeof(keyframes[0]))){
 		currentFrame = 0;
 	}
 
@@ -306,6 +309,7 @@ void idle() {
 
 	if(equal){
 		currentFrame++;
+	}
 	}
 	glutPostRedisplay(); // Display again.
 }
@@ -420,6 +424,13 @@ void littleKey(unsigned char key, int x, int y)
 		case 15:
 			bpart = 14;
 			break;
+
+		case 's':
+		case 'S':
+			for(int i=0;i<(sizeof(theta)/sizeof(theta[0]));i++){
+				printf("theta[%i] = %f\n",i,theta[i]);
+			}
+		break;
 		}
 	}
 
@@ -464,11 +475,11 @@ void myinit()
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
 	glMaterialf(GL_FRONT, GL_SHININESS, mat_shininess);
 
-	glShadeModel(GL_SMOOTH);
+	// glShadeModel(GL_SMOOTH);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
-	glDepthFunc(GL_ALWAYS);
-	glEnable(GL_DEPTH_TEST);
+	// glEnable(GL_DEPTH_TEST);
+	// 	glDepthFunc(GL_ALWAYS);
 
 	glClearColor(1.0, 1.0, 1.0, 1.0);
 	glColor3f(0.1, 0.1, 0.1);
@@ -513,7 +524,7 @@ int main(int argc, char *argv[])
 {
 	glutInit(&argc, argv);									  // Init GLUT with command line parameters.
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH | GLUT_RGB); // Use 2 buffers (hidden and visible). Use the depth buffer. Use 3 color channels.
-	glutInitWindowSize(500, 500);
+	glutInitWindowSize(500, 600);
 	glutCreateWindow("AT-ST");
 	glutKeyboardFunc(littleKey);
 	glutSpecialFunc(specialKey);
