@@ -6,6 +6,7 @@
  */
 
 // Please don't change lines 9-31 (It helps me to grade)
+#pragma once
 #ifdef __APPLE__
 // For XCode only: New C++ terminal project. Build phases->Compile with libraries: add OpenGL and GLUT
 // Import this whole code into a new C++ file (main.cpp, for example). Then run.
@@ -32,6 +33,7 @@
 // #include <iostream>
 #include <string.h>
 #include <math.h>
+#include "limb.hpp"
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
 /* Declare body parts height */
@@ -58,12 +60,14 @@
 typedef float point[3];
 
 static GLfloat keyframes[5][15] = {
-	{-30.0,0.0,0.0,95,-88.0,0.0,180,193,-43,263,-121,267,267,-57,-50},
-	{-30.0,0.0,0.0,80,-88.0,0.0,180,263,-121,193,-43,267,266,-50,-57},
-	{-30.0,0.0,0.0,95,-88.0,0.0,180,284,-141,263,-121,267,267,-57,-50},
-	{-30.0,0.0,0.0,80,-88.0,0.0,180,263,-121,284,-141,267,266,-50,-57},
-	{-30.0,0.0,0.0,95,-88.0,0.0,180,263,-121,263,-121,267,267,-50,-50}
+	{30.0,0.0,0.0,95,-88.0,0.0,180,193,-43,263,-121,267,267,-57,-50},
+	{30.0,0.0,0.0,80,-88.0,0.0,180,263,-121,193,-43,267,266,-50,-57},
+	{30.0,0.0,0.0,95,-88.0,0.0,180,284,-141,263,-121,267,267,-57,-50},
+	{30.0,0.0,0.0,80,-88.0,0.0,180,263,-121,284,-141,267,266,-50,-57},
+	{30.0,0.0,0.0,95,-88.0,0.0,180,263,-121,263,-121,267,267,-50,-50}
 };
+
+Limb* left_gunoo;
 
 int currentFrame;
 GLfloat theta[15] ={-0,0.0,0.0,89,-88.0,0.0,180,263,-121,263,-121,267,267,-50,-50};
@@ -170,14 +174,6 @@ void right_feet()
 	glPopMatrix();
 }
 
-void init()
-{
-	glEnable(GL_DEPTH_TEST);		  // Enable check for close and far objects.
-	glClearColor(0.0, 0.0, 0.0, 0.0); // Clear the color state.
-	glMatrixMode(GL_MODELVIEW);		  // Go to 3D mode.
-	glLoadIdentity();				  // Reset 3D view matrix.
-}
-
 void drawAxis()
 {
 	glLineWidth(3.0f);
@@ -209,12 +205,12 @@ void display() // Called for each frame (about 60 times per second).
 	/* Draw Torso */
 	glColor3f(0, 0, 0);
 	glRotatef(theta[0], 0, 1, 0);
+	glTranslatef(0,1,0);
 	body();
 	/* Connect left gun to the body */
 	glPushMatrix();
-	glTranslatef(-(BODY_RADIUS + UPPER_GUN_RADIUS), 0.2 * BODY_HEIGHT, 0);
-	glRotatef(theta[3], 1, 0, 0);
-	left_gun();
+	left_gunoo->update(theta[3]);
+	left_gunoo->draw(0.5, 0.5, 5.0);
 	glPopMatrix();
 
 	/* Connect middle gun to the body */
@@ -299,9 +295,9 @@ void idle() {
 	for(int x = 0; x < (sizeof(theta)/sizeof(theta[0])); x++){
 		if(!compare_float(keyframes[currentFrame][x],theta[x])){
 			if(keyframes[currentFrame][x] >= theta[x]){
-				theta[x] += 0.07f;
+				theta[x] += 0.09f;
 			} else{
-				theta[x] -= 0.07f;
+				theta[x] -= 0.09f;
 			}
 			equal = equal&0;
 		}
@@ -456,14 +452,15 @@ void specialKey(int key, int x, int y)
 
 void myinit()
 {
+	left_gunoo = new Limb();
 	GLfloat mat_specular[] = {1.0, 1.0, 1.0, 1.0};
-	GLfloat mat_diffuse[] = {0.3, 0.3, 0.3, 0.3};
-	GLfloat mat_ambient[] = {0.9, 0.9, 0.9, 0.9};
+	GLfloat mat_diffuse[] = {0.9,1,1,1};
+	GLfloat mat_ambient[] = {0.1, 0.1, 0.1, 0.1};
 	GLfloat mat_shininess = {100.0};
-	GLfloat light_ambient[] = {0.0, 0.0, 0.0, 1.0};
+	GLfloat light_ambient[] = {0.1, 0.1, 0.0, 1.0};
 	GLfloat light_diffuse[] = {1.0, 1.0, 1.0, 1.0};
-	GLfloat light_specular[] = {1.0, 1.0, 1.0, 1.0};
-	GLfloat light_position[] = {10.0, 10.0, 10.0, 0.0};
+	GLfloat light_specular[] = {0.9, 0.9, 0.9, 0.9};
+	GLfloat light_position[] = {0, 0, 10.0, 0.0};
 
 	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
@@ -478,14 +475,56 @@ void myinit()
 	// glShadeModel(GL_SMOOTH);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
-	// glEnable(GL_DEPTH_TEST);
-	// 	glDepthFunc(GL_ALWAYS);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
 
+
+	//glBlending
+	// glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_ALWAYS); 
+	//alpha-source
 	glClearColor(1.0, 1.0, 1.0, 1.0);
 	glColor3f(0.1, 0.1, 0.1);
 
 	/* allocate quadrics with filled drawing style */
+	lua = gluNewQuadric();
+	gluQuadricDrawStyle(lua, GLU_FILL);
+	h = gluNewQuadric();
+	gluQuadricDrawStyle(h, GLU_FILL);
+	t = gluNewQuadric();
+	gluQuadricDrawStyle(t, GLU_FILL);
+	lla = gluNewQuadric();
+	gluQuadricDrawStyle(lla, GLU_FILL);
+	rua = gluNewQuadric();
+	gluQuadricDrawStyle(rua, GLU_FILL);
+	rla = gluNewQuadric();
+	gluQuadricDrawStyle(rla, GLU_FILL);
+	lul = gluNewQuadric();
+	gluQuadricDrawStyle(lul, GLU_FILL);
+	lll = gluNewQuadric();
+	gluQuadricDrawStyle(lll, GLU_FILL);
+	rul = gluNewQuadric();
+	gluQuadricDrawStyle(rul, GLU_FILL);
+	rll = gluNewQuadric();
+	gluQuadricDrawStyle(rll, GLU_FILL);
+	lf = gluNewQuadric();
+	gluQuadricDrawStyle(lf, GLU_FILL);
+	rf = gluNewQuadric();
+	gluQuadricDrawStyle(rf, GLU_FILL);
+	lwll = gluNewQuadric();
+	gluQuadricDrawStyle(lwll, GLU_FILL);
+	lwrl = gluNewQuadric();
+	gluQuadricDrawStyle(lwrl, GLU_FILL);
+}
 
+void init(){
+	glEnable(GL_DEPTH_TEST);			// Enable check for close and far objects.
+	glClearColor(0.0, 0.0, 0.0, 0.0);	// Clear the color state.
+	glMatrixMode(GL_MODELVIEW);			// Go to 3D mode.
+	glLoadIdentity();	
+
+	glClearColor(1.0, 1.0, 1.0, 1.0);
+	glColor3f(0.1, 0.1, 0.1);
 	h = gluNewQuadric();
 	gluQuadricDrawStyle(h, GLU_FILL);
 	t = gluNewQuadric();
@@ -537,6 +576,7 @@ int main(int argc, char *argv[])
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 
 	myinit();
+	// init();
 	glutReshapeFunc(reshape); // Reshape CALLBACK function.
 	glutDisplayFunc(display); // Display CALLBACK function.
 	glutIdleFunc(idle);		  // Idle CALLBACK function.
