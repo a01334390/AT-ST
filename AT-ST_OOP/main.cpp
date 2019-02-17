@@ -50,25 +50,31 @@ GLUquadricObj *h, *rla;
 /* Initial joint angles */
 typedef float point[3];
 
-static GLfloat keyframes[8][15] = {
-    /*{-90.0,0.0,0.0,95,-88.0,0.0,180,193,-43,263,-121,267,267,-57,-50},
-    {-90.0,0.0,0.0,80,-88.0,0.0,180,263,-121,193,-43,267,266,-50,-57},
-    {-90.0,0.0,0.0,95,-88.0,0.0,180,284,-141,263,-121,267,267,-57,-50},
-    {-90.0,0.0,0.0,80,-88.0,0.0,180,263,-121,284,-141,267,266,-50,-57},
-    {-90.0,0.0,0.0,95,-88.0,0.0,180,263,-121,263,-121,267,267,-50,-50},
-    *///extra
-    {-90.0,  0.0,  0.0,  90.0,  -89.0,  0.0,  180.0,  265.0,  -63.0,  277.0,  -89.0,  201.0,  242.0,  -43.0,  -60.0},
-    {-90.0,  0.0,  0.0,  90.0,  -89.0,  0.0,  180.0,  265.0,  -63.0,  271.0,  -100.0,  201.0,  244.0,  -43.0,  -52.0},
-    {-90.0,  0.0,  0.0,  90.0,  -89.0,  0.0,  180.0,  265.0,  -63.0,  251.0,  -102.0,  201.0,  251.0,  -43.0,  -51.0},
-    {-90.0,  0.0,  0.0,  90.0,  -89.0,  2.0,  179.0,  265.0,  -63.0,  226.0,  -81.0,  201.0,  256.0,  -43.0,  -41.0},
-    {-90.0,  0.0,  0.0,  90.0,  -89.0,  2.0,  179.0,  281.0,  -74.0,  232.0,  -85.0,  238.0,  254.0,  -68.0,  -41.0},
-    {-90.0,  0.0,  0.0,  90.0,  -89.0,  2.0,  179.0,  281.0,  -83.0,  234.0,  -87.0,  238.0,  254.0,  -68.0,  -41.0},
-    {-90.0,  0.0,  0.0,  90.0,  -89.0,  2.0,  179.0,  281.0,  -95.0,  246.0,  -94.0,  238.0,  249.0,  -68.0,  -41.0},
-    {-90.0,  0.0,  0.0,  90.0,  -89.0,  2.0,  179.0,  247.0,  -96.0,  275.0,  -81.0,  243.0,  207.0,  -34.0, -41.0}
+static GLfloat keyframes[10][15] = {
+    //Ida D1 regreso I1
+    {-60, 0, 0, 90, -90, 0, 180, 231, -88, 280, -93, 225, 209, -8, -48},
+    //Ida D2 regreso I2
+    {-60, 0, 0, 90, -90, 0, 180, 241, -88, 284, -113, 233, 216, -26, -33}, 
+    //Ida D3 regreso I3
+    {-60, 0, 0, 90, -90, 0, 180, 255, -96, 268, -124, 221, 216, -20, -33},
+    //Ida D4 Regreso I4
+    {-60, 0, 0, 90, -90, 0, 179, 267, -94, 235, -98, 207, 219, -20, -22},
+    //Ida D5 Regreso I5
+    {-60, 0, 0, 90, -90, 0, 180, 259, -57, 226, -86, 202, 226, -44, -6},
+    //Regreso D1 ida I1
+    {-60, 0, 0, 90, -90, 0, 180, 280, -93, 231, -88, 209, 225, -48, -8},
+    //Regreso D2 ida I2
+    {-60, 0, 0, 90, -90, 0, 180, 284, -113, 241, -88, 216, 233, -33, -26},
+    //Regreso D3 ida I3
+    {-60, 0, 0, 90, -90, 0, 180, 268, -98, 255, -96, 216, 221, -22, -20},
+    //Regreso D4 ida I4
+    {-60, 0, 0, 90, -90, 0, 180, 235, -98, 267, -94, 219, 207, -22, -20},
+    //Regreso D5 ida I5
+    {-60, 0, 0, 90, -90, 0, 180, 226, -98, 259, -57, 226, 202, -6, -44}
 };
 
 int currentFrame;
-GLfloat theta[15] ={-0,0.0,0.0,89,-88.0,0.0,180,263,-121,263,-121,267,267,-50,-50};
+GLfloat theta[15] = {-60, 0 ,0 ,90 ,-90, 0, 180 ,259 ,-57 ,259 ,-57 ,202 ,202 ,-44 ,-44};
 
 /* Chosen part for debug */
 int bpart;
@@ -97,27 +103,29 @@ void drawAxis()
     glBegin(GL_LINES);
     {
         glColor3f(1, 0, 0);
-        glVertex3f(0, 0, 0);
-        glVertex3f(1, 0, 0);
-        glColor3f(0, 1, 0);
-        glVertex3f(0, 0, 0);
-        glVertex3f(0, 1, 0);
+        glVertex3f(-10, -10, 0);
+        glVertex3f(10, -10, 0);
+        
         glColor3f(0, 0, 1);
-        glVertex3f(0, 0, 1);
-        glVertex3f(0, 0, 1);
+        glVertex3f(0, -10, -10);
+        glVertex3f(0, -10, 10);
     }
     glEnd();
     glFlush();
 }
+
+float yCam = 0.0;
+
 void display() // Called for each frame (about 60 times per second).
 {
     
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers.
     glLoadIdentity();                                    // Reset 3D view matrix.
-    gluLookAt(0.0, 0.0, 10.0,                            // Where the camera is.
+    gluLookAt(0.0, yCam, 10.0,                            // Where the camera is.
               0.0, 0.0, 0.0,                            // To where the camera points at.
               0.0, 1.0, 0.0);
     
+    // Draws "floor"
     drawAxis();
     
     /* Draw Torso */
@@ -136,8 +144,18 @@ void display() // Called for each frame (about 60 times per second).
     glutSwapBuffers(); // Swap the hidden and visible buffers.
 }
 
+float dir = 1;
+
 void idle() {
+
+
     if(!debug){
+        
+        if (yCam > 0.5 || yCam < -0.5){
+            dir = dir*-1;
+        }
+        yCam += 0.0008*dir;
+        
         if(currentFrame == (sizeof(keyframes)/sizeof(keyframes[0]))){
             currentFrame = 0;
         }
@@ -147,9 +165,9 @@ void idle() {
         for(int x = 0; x < (sizeof(theta)/sizeof(theta[0])); x++){
             if(!compare_float(keyframes[currentFrame][x],theta[x])){
                 if(keyframes[currentFrame][x] >= theta[x]){
-                    theta[x] += 0.05f;
+                    theta[x] += 0.1f;
                 } else{
-                    theta[x] -= 0.05f;
+                    theta[x] -= 0.1f;
                 }
                 equal = equal&0;
             }
@@ -187,88 +205,88 @@ void littleKey(unsigned char key, int x, int y)
         switch (key)
         {
             case 'A':
-            case 'a':
+            case 'q':
             case '1':
             case 1:
                 bpart = 0;
                 break;
             case 'B':
-            case 'b':
+            case 'w':
             case '2':
             case 2:
                 bpart = 1;
                 break;
             case 'C':
-            case 'c':
+            case 'e':
             case '3':
             case 3:
                 bpart = 2;
                 break;
             case 'D':
-            case 'd':
+            case 'r':
             case '4':
             case 4:
                 bpart = 3;
                 break;
             case 'E':
-            case 'e':
+            case 't':
             case '5':
             case 5:
                 bpart = 4;
                 break;
             case 'F':
-            case 'f':
+            case 'y':
             case '6':
             case 6:
                 bpart = 5;
                 break;
             case 'G':
-            case 'g':
+            case 'u':
             case '7':
             case 7:
                 bpart = 6;
                 break;
             case 'H':
-            case 'h':
+            case 'i':
             case '8':
             case 8:
                 bpart = 7;
                 break;
             case 'I':
-            case 'i':
+            case 'o':
             case '9':
             case 9:
                 bpart = 8;
                 break;
             case 'J':
-            case 'j':
+            case 'p':
             case 10:
                 bpart = 9;
                 break;
             case 'K':
-            case 'k':
+            case 'z':
             case 11:
                 bpart = 10;
                 break;
             case 'M':
-            case 'm':
+            case 'x':
             case 12:
                 bpart = 11;
                 break;
             case 'N':
-            case 'n':
+            case 'c':
             case 13:
                 bpart = 12;
                 break;
                 
             case 'O':
-            case 'o':
+            case 'v':
             case 14:
                 bpart = 13;
                 break;
                 
             case 'P':
-            case 'p':
+            case 'b':
             case 15:
                 bpart = 14;
                 break;
